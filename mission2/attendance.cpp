@@ -23,25 +23,23 @@ public:
 		DaysCount
 	};
 
-	static const string GOLD_GRADE = "GOLD";
-	static const string SILVER_GRADE = "SILVER";
-	static const string NORMAL_GRADE = "NORMAL";
+	const string GOLD_GRADE = "GOLD";
+	const string SILVER_GRADE = "SILVER";
+	const string NORMAL_GRADE = "NORMAL";
 	static const int SPECIAL_DAY_POINT = 10;
 	static const int START_MEMBER_ID = 1;
 	static const int MAX_MEMBER_ID = 19;
 	static const int MEMBERS_COUNT = MAX_MEMBER_ID + 1;
-	static const int WEIGHTED_VALUE_PER_DAY[DaysCount] = { 1, 1, 3, 1, 1, 2, 2 };
+	const int WEIGHTED_VALUE_PER_DAY[DaysCount] = { 1, 1, 3, 1, 1, 2, 2 };
 
 // member variables
-private:
+public:
 	map<string, int> id_map;
 	int id_cnt = 0;
 
-	//dat[사용자ID][요일]
 	int attended_days[MEMBERS_COUNT][DaysCount];
 	int points[MEMBERS_COUNT];
 	string grade[MEMBERS_COUNT];
-
 
 	string names[MEMBERS_COUNT];
 
@@ -49,7 +47,7 @@ private:
 	int weekend_attendance[MEMBERS_COUNT];
 
 // member functions
-private:
+public:
 	int getMemberId(string member_name) {
 		if (id_map.count(member_name) == 0) {
 			id_map.insert({ member_name, ++id_cnt });
@@ -151,20 +149,21 @@ public :
 
 		for (int member_id = START_MEMBER_ID; member_id <= id_cnt; member_id++) {
 
-			if ((grade[member_id] == NORMAL_GRADE) && (haveAttenedOnSpecialDay(member_id) == false)) {
+			if ((haveAttenedOnSpecialDay(member_id) == false)&&(grade[member_id] == NORMAL_GRADE)) {
 				std::cout << names[member_id] << "\n";
 			}
 		}
 	}
 
 	void UpdateInitialMemberAttendanceInfo() {
-		ifstream fin{ "attendance_weekday_500.txt" }; //500개 데이터 입력
+		ifstream fin{ "C:\\Users\\User\\source\\repos\\Project1\\Project1\\attendance_weekday_500.txt"  }; //500개 데이터 입력
 
 		for (int i = 0; i < 500; i++) {
 			string member_name, week_day;
 			fin >> member_name >> week_day;
+			int member_id = getMemberId(member_name);
 
-			updateAttendance(getMemberId(member_name), week_day);		
+			updateAttendance(member_id, week_day);		
 		}
 	}
-};
+}; 
