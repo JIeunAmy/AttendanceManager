@@ -7,9 +7,189 @@
 
 using namespace std;
 
-class Attendance
+class AttendedDays
 {
-// define
+private:
+	static const int DAYS = 7;
+	int attended_day_count[DAYS];
+
+public:
+	void updateAttendedDays(int day)
+	{
+		attended_day_count[day]++;
+	}
+
+	int getAttenedCount(int day)
+	{
+		return attended_day_count[day];
+	}
+
+	int getWeekendCount(void)
+	{
+		static const int SATURDAY = 5;
+		static const int SUNDAY = 6;
+		return (attended_day_count[SATURDAY] + attended_day_count[SUNDAY]);
+	}
+};
+
+class Grade
+{
+private:
+	string grade_status;
+	int grade_criteria;
+public:
+	Grade(string _grade_status, int _grade_criteria)
+		: grade_status(_grade_status),
+     	  grade_criteria(_grade_criteria)
+	{
+		// do nothing;
+	}
+	string GetGrade()
+	{
+		return grade_status;
+	}
+
+	void Update(string _grade_status)
+	{
+		grade_status = _grade_status;
+	}
+
+	int getCriteria(void)
+	{
+		return grade_criteria;
+	}
+};
+
+class GoldGrade: public Grade
+{
+public:
+	GoldGrade()
+		:Grade("GOLD", 50)
+	{
+		// do nothing
+	}
+};
+
+class SilverGrade: public Grade
+{
+public:
+	SilverGrade()
+		:Grade("SILVER", 30)
+	{
+		// do nothing
+	}
+};
+
+class NormalGrade: public Grade
+{
+public:
+	NormalGrade()
+		:Grade("NORMAL", 0)
+	{
+		// do nothing
+	}
+};
+
+class Member
+{
+private:
+	Grade *current_grade;
+	AttendedDays attened_days;
+	string name;
+	int points;
+
+public:
+	void updateName(string _name)
+	{
+		name = _name;
+	}
+
+	string getName()
+	{
+		return name;
+	}
+
+	string getGrade()
+	{
+		return current_grade->GetGrade();
+	}
+
+	void setGrade(Grade *grade)
+	{
+		current_grade = grade;
+	}
+
+	void updateAttendCount(int day)
+	{
+		attened_days.updateAttendedDays(day);
+	}
+
+	int getAttenedCount(int day)
+	{
+		return attened_days.getAttenedCount(day);
+	}
+
+	AttendedDays* getAttendDays()
+	{
+		return &attened_days;
+	}
+
+	void updatePoints(int _points)
+	{
+		points += _points;
+	}
+
+	int getPoints(void)
+	{
+		return points;
+	}
+
+	void printInfo()
+	{
+		cout << "NAME : " << name << ", ";
+		cout << "POINT : " << points << ", ";
+		cout << "GRADE : " << current_grade->GetGrade() << ", ";
+		cout << "\n";
+	}
+};
+
+class PointCalculator
+{
+private:
+
+	static const int SPECIAL_DAY_POINT = 10;
+	static const int SPECIAL_POINT_CRITERIA = 9;
+	static const int DAY_COUNT = 7;
+
+	const int WEIGHTED_VALUE_PER_DAY[DAY_COUNT] = { 1, 1, 3, 1, 1, 2, 2 };
+	//Day specialDay = Wednesday;
+
+public:
+	int getCaculatedPoint(int point, int day)
+	{
+		return point * WEIGHTED_VALUE_PER_DAY[day];
+	}
+	void updateSpecialDayCalculatedPoint(Member *member, vector<int> specialDays) {
+
+		for (int specialDay : specialDays)
+		{
+			if (member->getAttendDays()->getAttenedCount(specialDay) > SPECIAL_POINT_CRITERIA) {
+				member->updatePoints(SPECIAL_DAY_POINT);
+			}
+		}
+
+		if (member->getAttendDays()->getWeekendCount() > SPECIAL_POINT_CRITERIA){
+			member->updatePoints(SPECIAL_DAY_POINT);
+		}
+	}
+};
+
+
+
+
+
+class ExcerciseClubPolicy
+{
 public:
 	enum Day
 	{
@@ -19,39 +199,63 @@ public:
 		Thursday,
 		Friday,
 		Saturday,
-		Sunday, 
+		Sunday,
 		DaysCount
 	};
-
-	const string GOLD_GRADE = "GOLD";
-	const string SILVER_GRADE = "SILVER";
-	const string NORMAL_GRADE = "NORMAL";
-	static const int SPECIAL_DAY_POINT = 10;
-	static const int START_MEMBER_ID = 1;
-	static const int MAX_MEMBER_ID = 19;
-	static const int MEMBERS_COUNT = MAX_MEMBER_ID + 1;
-	const int WEIGHTED_VALUE_PER_DAY[DaysCount] = { 1, 1, 3, 1, 1, 2, 2 };
-
-// member variables
 public:
 	map<string, int> id_map;
 	int id_cnt = 0;
 
-	int attended_days[MEMBERS_COUNT][DaysCount];
-	int points[MEMBERS_COUNT];
-	string grade[MEMBERS_COUNT];
+public:
+	virtual int getMemberId(string member_name) = 0;
 
-	string names[MEMBERS_COUNT];
+	virtual void updateAttendance(int member_id, string week_day) = 0;
 
-	int wednesday_attendance[MEMBERS_COUNT];
-	int weekend_attendance[MEMBERS_COUNT];
+	virtual void updateMemberPoint(void) = 0;
 
+	virtual void updateSpecialDayPoint(void) = 0;
+
+	virtual void updateGrade(void) = 0;
+
+	virtual bool haveAttenedOnSpecialDay(int member_id) = 0;
+
+	virtual void printMembersInfo(void) = 0;
+
+	virtual void printRemovedMember(void) = 0;
+
+	virtual void UpdateInitialMemberAttendanceInfo() = 0;
+
+};
+
+class BaseballClubPolicy : public ExcerciseClubPolicy
+{
+// define
+private:
+	const string GOLD_GRADE = "GOLD";
+	const string SILVER_GRADE = "SILVER";
+	const string NORMAL_GRADE = "NORMAL";
+
+	static const int SPECIAL_DAY_POINT = 10;
+	static const int START_MEMBER_ID = 1;
+	static const int MAX_MEMBER_ID = 19;
+	static const int MEMBERS_COUNT = MAX_MEMBER_ID + 1;
+
+// member variables
+public:	
+	Member member[MEMBERS_COUNT];
+	PointCalculator pointCalculator;
+
+	GoldGrade goldGrade;
+	SilverGrade silverGrade;
+	NormalGrade normalGrade;
+
+	vector<int> specialDays{ Wednesday };
 // member functions
 public:
 	int getMemberId(string member_name) {
 		if (id_map.count(member_name) == 0) {
 			id_map.insert({ member_name, ++id_cnt });
-			names[id_cnt] = member_name;
+			member[id_cnt].updateName(member_name);
 		}
 		return id_map[member_name];
 	}
@@ -67,7 +271,6 @@ public:
 		}
 		if (week_day == "wednesday") {
 			day = Wednesday;
-			wednesday_attendance[member_id] += 1;
 		}
 		if (week_day == "thursday") {
 			day = Thursday;
@@ -77,14 +280,11 @@ public:
 		}
 		if (week_day == "saturday") {
 			day = Saturday;
-			weekend_attendance[member_id] += 1;
 		}
 		if (week_day == "sunday") {
 			day = Sunday;
-			weekend_attendance[member_id] += 1;
 		}
-
-		attended_days[member_id][day] += 1;
+		member[member_id].updateAttendCount(day);
 	}
 
 	void updateMemberPoint(void)
@@ -92,52 +292,53 @@ public:
 		for (int member_id = START_MEMBER_ID; member_id <= id_cnt; member_id++) {
 			for (int day = Monday; day < DaysCount; day++)
 			{
-				points[member_id] += attended_days[member_id][day] * WEIGHTED_VALUE_PER_DAY[day];
+				member[member_id].updatePoints(pointCalculator.getCaculatedPoint(member[member_id].getAttenedCount(day), day));
 			}
 		}
 	}
 
 	void updateSpecialDayPoint(void)
 	{
-		static const int SPECIAL_POINT_CRITERIA = 9;
-
 		for (int member_id = START_MEMBER_ID; member_id <= id_cnt; member_id++) {
-			if (wednesday_attendance[member_id] > SPECIAL_POINT_CRITERIA) {
-				points[member_id] += SPECIAL_DAY_POINT;
-			}
-
-			if (weekend_attendance[member_id] > SPECIAL_POINT_CRITERIA) {
-				points[member_id] += SPECIAL_DAY_POINT;
-			}
+			pointCalculator.updateSpecialDayCalculatedPoint(&member[member_id], specialDays);
 		}
 	}
 
 	void updateGrade(void)
 	{
 		for (int member_id = START_MEMBER_ID; member_id <= id_cnt; member_id++) {
-			if (points[member_id] >= 50) {
-				grade[member_id] = GOLD_GRADE;
+			if (member[member_id].getPoints() >= goldGrade.getCriteria()) {
+				member[member_id].setGrade(&goldGrade);
 			}
-			else if (points[member_id] >= 30) {
-				grade[member_id] = SILVER_GRADE;
+			else if (member[member_id].getPoints() >= silverGrade.getCriteria()) {
+				member[member_id].setGrade(&silverGrade);
 			}
 			else {
-				grade[member_id] = NORMAL_GRADE;
+				member[member_id].setGrade(&normalGrade);
 			}
 		}
 	}
 
 	bool haveAttenedOnSpecialDay(int member_id)
 	{
-		return ((wednesday_attendance[member_id] != 0) || (weekend_attendance[member_id] != 0));
+		bool is_attened_on_special_days = false;
+		for (int specialDay : specialDays)
+		{
+			if (member[member_id].getAttenedCount(specialDay) > 0) {
+				is_attened_on_special_days = true;
+			}
+		}
+
+		if (member[member_id].getAttendDays()->getWeekendCount() > 0){
+			is_attened_on_special_days = true;
+		}
+		return is_attened_on_special_days;
 	}
-public :
-	void printMembersPointAndGrade(void)
+
+	void printMembersInfo(void)
 	{
 		for (int member_id = START_MEMBER_ID; member_id <= id_cnt; member_id++) {
-			cout << "NAME : " << names[member_id] << ", ";
-			cout << "POINT : " << points[member_id] << ", ";
-			cout << "GRADE : " << grade[member_id] << "\n";
+			member[member_id].printInfo();
 		}
 	}
 
@@ -149,8 +350,8 @@ public :
 
 		for (int member_id = START_MEMBER_ID; member_id <= id_cnt; member_id++) {
 
-			if ((haveAttenedOnSpecialDay(member_id) == false)&&(grade[member_id] == NORMAL_GRADE)) {
-				std::cout << names[member_id] << "\n";
+			if ((haveAttenedOnSpecialDay(member_id) == false) && (member[member_id].getGrade() == NORMAL_GRADE)) {
+				std::cout << member[member_id].getName() << "\n";
 			}
 		}
 	}
@@ -166,4 +367,5 @@ public :
 			updateAttendance(member_id, week_day);		
 		}
 	}
-}; 
+};
+

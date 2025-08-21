@@ -9,66 +9,103 @@ using namespace std;
 class AttendanceFixture : public Test
 {
 public:
-	Attendance attendance;
+	BaseballClubPolicy baseballClubPolicy;
 };
 
 TEST_F(AttendanceFixture, TC1)
 {
-	attendance.UpdateInitialMemberAttendanceInfo();
-	EXPECT_EQ(attendance.id_cnt, 19);
+	baseballClubPolicy.UpdateInitialMemberAttendanceInfo();
+	EXPECT_EQ(baseballClubPolicy.id_cnt, 19);
 }
 
 TEST_F(AttendanceFixture, TC2)
 {
-	attendance.updateAttendance(1, "monday");
-	attendance.updateAttendance(1, "tuesday");
-	attendance.updateAttendance(1, "wednesday");
-	attendance.updateAttendance(1, "thursday");
-	attendance.updateAttendance(1, "friday");
-	attendance.updateAttendance(1, "saturday");
-	attendance.updateAttendance(1, "sunday");
+	baseballClubPolicy.updateAttendance(1, "monday");
+	baseballClubPolicy.updateAttendance(1, "tuesday");
+	baseballClubPolicy.updateAttendance(1, "wednesday");
+	baseballClubPolicy.updateAttendance(1, "thursday");
+	baseballClubPolicy.updateAttendance(1, "friday");
+	baseballClubPolicy.updateAttendance(1, "saturday");
+	baseballClubPolicy.updateAttendance(1, "sunday");
 
 	for (int i = 0 ;i < 7;++i)
 	{
-		EXPECT_EQ(attendance.attended_days[1][i], 1);
+		EXPECT_EQ(baseballClubPolicy.member[1].getAttenedCount(i), 1);
 	}
-
-	EXPECT_EQ(attendance.wednesday_attendance[1], 1);
-	EXPECT_EQ(attendance.weekend_attendance[1], 2);
 }
 
 TEST_F(AttendanceFixture, TC3)
 {
-	attendance.UpdateInitialMemberAttendanceInfo();
+	baseballClubPolicy.UpdateInitialMemberAttendanceInfo();
 
-	attendance.updateMemberPoint();
-	attendance.updateSpecialDayPoint();
-	attendance.updateGrade();
+	baseballClubPolicy.updateMemberPoint();
+	baseballClubPolicy.updateSpecialDayPoint();
+	baseballClubPolicy.updateGrade();
 
-	attendance.printRemovedMember();
-	EXPECT_EQ(1, 1);
+	baseballClubPolicy.printRemovedMember();
 }
-
 
 TEST_F(AttendanceFixture, TC4)
 {
-	attendance.UpdateInitialMemberAttendanceInfo();
+	baseballClubPolicy.UpdateInitialMemberAttendanceInfo();
 
-	attendance.updateMemberPoint();
-	attendance.updateSpecialDayPoint();
-	attendance.updateGrade();
-	attendance.printMembersPointAndGrade();
+	baseballClubPolicy.updateMemberPoint();
+	baseballClubPolicy.updateSpecialDayPoint();
+	baseballClubPolicy.updateGrade();
+	baseballClubPolicy.printRemovedMember();
+
+	baseballClubPolicy.printMembersInfo();
 }
 
+TEST_F(AttendanceFixture, WED_10)
+{
+	int member_id = baseballClubPolicy.getMemberId("test");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+	baseballClubPolicy.updateAttendance(member_id, "wednesday");
+
+	baseballClubPolicy.updateGrade();
+	baseballClubPolicy.updateMemberPoint();
+	baseballClubPolicy.updateSpecialDayPoint();
+	EXPECT_EQ(baseballClubPolicy.member[member_id].getPoints(), 40);	
+}
+
+TEST_F(AttendanceFixture, WEEKEND_10)
+{
+	int member_id = baseballClubPolicy.getMemberId("test");
+	baseballClubPolicy.updateAttendance(member_id, "saturday");
+	baseballClubPolicy.updateAttendance(member_id, "saturday");
+	baseballClubPolicy.updateAttendance(member_id, "saturday");
+	baseballClubPolicy.updateAttendance(member_id, "saturday");
+	baseballClubPolicy.updateAttendance(member_id, "saturday");
+	baseballClubPolicy.updateAttendance(member_id, "sunday");
+	baseballClubPolicy.updateAttendance(member_id, "sunday");
+	baseballClubPolicy.updateAttendance(member_id, "sunday");
+	baseballClubPolicy.updateAttendance(member_id, "sunday");
+	baseballClubPolicy.updateAttendance(member_id, "sunday");
+
+	baseballClubPolicy.updateGrade();
+	baseballClubPolicy.updateMemberPoint();
+	baseballClubPolicy.updateSpecialDayPoint();
+	EXPECT_EQ(baseballClubPolicy.member[member_id].getPoints(), 30);
+}
 
 TEST_F(AttendanceFixture, TC5)
 {
-	attendance.UpdateInitialMemberAttendanceInfo();
+	baseballClubPolicy.UpdateInitialMemberAttendanceInfo();
 
-	attendance.updateMemberPoint();
-	attendance.updateSpecialDayPoint();
-	attendance.updateGrade();
+	baseballClubPolicy.updateMemberPoint();
+	baseballClubPolicy.updateSpecialDayPoint();
+	baseballClubPolicy.updateGrade();
+	baseballClubPolicy.printMembersInfo();
 
-	EXPECT_TRUE(attendance.haveAttenedOnSpecialDay(attendance.getMemberId("Will")));
-	EXPECT_FALSE(attendance.haveAttenedOnSpecialDay(attendance.getMemberId("Zane")));	
+	EXPECT_TRUE(baseballClubPolicy.haveAttenedOnSpecialDay(baseballClubPolicy.getMemberId("Will")));
+	EXPECT_FALSE(baseballClubPolicy.haveAttenedOnSpecialDay(baseballClubPolicy.getMemberId("Zane")));
 }
